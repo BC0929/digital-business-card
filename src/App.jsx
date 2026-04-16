@@ -1,6 +1,56 @@
+import { useState } from 'react'
 import './App.css'
 
 function App() {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    comment: ''
+  })
+
+  const [statusMessage, setStatusMessage] = useState('')
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setStatusMessage('Submitting...')
+
+    try {
+      const response = await fetch('https://xlhqk82u3j.execute-api.us-east-2.amazonaws.com/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setStatusMessage('Thanks. Your information was submitted.')
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          comment: ''
+        })
+      } else {
+        setStatusMessage(data.message || 'Submission failed.')
+      }
+    } catch (error) {
+      console.error(error)
+      setStatusMessage('Something went wrong.')
+    }
+  }
+
   return (
     <div className="page">
       <header className="hero">
@@ -18,7 +68,12 @@ function App() {
 
           <div className="hero-buttons">
             <a className="button primary" href="#contact">Recruiter Contact</a>
-            <a className="button secondary" href="/Brandon-Clair-Resume.pdf" target="_blank" rel="noreferrer">
+            <a
+              className="button secondary"
+              href="/Brandon-Clair-Resume.pdf"
+              target="_blank"
+              rel="noreferrer"
+            >
               Open Resume
             </a>
           </div>
@@ -164,35 +219,58 @@ function App() {
         <section className="card" id="contact">
           <h2>Recruiter Contact</h2>
           <p className="contact-text">
-            Backend idea for the project: a recruiter can leave their name,
-            phone number, email, and a short note. Later, this form can trigger
-            an email notification to me.
+            Leave your information below and it will be saved securely.
           </p>
 
-          <form className="contact-form">
+          <form className="contact-form" onSubmit={handleSubmit}>
             <label>
               Name
-              <input type="text" placeholder="Enter full name" />
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter full name"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </label>
 
             <label>
               Phone
-              <input type="tel" placeholder="Enter phone number" />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Enter phone number"
+                value={formData.phone}
+                onChange={handleChange}
+              />
             </label>
 
             <label>
               Email
-              <input type="email" placeholder="Enter email address" />
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={handleChange}
+              />
             </label>
 
             <label>
               Comment
-              <textarea placeholder="Add a message or recruiting note"></textarea>
+              <textarea
+                name="comment"
+                placeholder="Add a message or recruiting note"
+                value={formData.comment}
+                onChange={handleChange}
+              ></textarea>
             </label>
 
             <button type="submit" className="button primary">
               Submit
             </button>
+
+            {statusMessage && <p>{statusMessage}</p>}
           </form>
         </section>
       </main>
